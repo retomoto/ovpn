@@ -249,9 +249,12 @@ else
 # Generate server.conf
 	echo "port $PORT
 dev tun
+sndbuf 0
+rcvbuf 0
 proto $PROTOCOL
 tls-server
 ifconfig 10.0.2.1 10.0.2.2
+keepalive 10 120
 comp-lzo
 daemon
 ca ca.crt
@@ -259,13 +262,52 @@ cert server.crt
 key server.key
 dh dh.pem
 tls-auth ta.key 0
+auth SHA512
 cipher AES-256-CBC
 #user nobody
 #group nobody
 max-clients 1
 persist-key
 persist-tun
-verb 3
+verb 3" >> /etc/openvpn/server.conf
+
+# DNS
+	case $DNS in
+		1) 
+		# Locate the proper resolv.conf
+		# Needed for systems running systemd-resolved
+		if grep -q "127.0.0.53" "/etc/resolv.conf"; then
+			RESOLVCONF='/run/systemd/resolve/resolv.conf'
+		else
+			RESOLVCONF='/etc/resolv.conf'
+		fi
+		# Obtain the resolvers from resolv.conf and use them for OpenVPN
+		grep -v '#' $RESOLVCONF | grep 'nameserver' | grep -E -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | while read line; do
+			echo "push \"dhcp-option DNS $line\"" >> /etc/openvpn/server.conf
+		done
+		;;
+		2) 
+		echo 'push "dhcp-option DNS 8.8.8.8"' >> /etc/openvpn/server.conf
+		echo 'push "dhcp-option DNS 8.8.4.4"' >> /etc/openvpn/server.conf
+		;;
+		3)
+		echo 'push "dhcp-option DNS 208.67.222.222"' >> /etc/openvpn/server.conf
+		echo 'push "dhcp-option DNS 208.67.220.220"' >> /etc/openvpn/server.conf
+		;;
+		4) 
+		echo 'push "dhcp-option DNS 129.250.35.250"' >> /etc/openvpn/server.conf
+		echo 'push "dhcp-option DNS 129.250.35.251"' >> /etc/openvpn/server.conf
+		;;
+		5) 
+		echo 'push "dhcp-option DNS 74.82.42.42"' >> /etc/openvpn/server.conf
+		;;
+		6) 
+		echo 'push "dhcp-option DNS 64.6.64.6"' >> /etc/openvpn/server.conf
+		echo 'push "dhcp-option DNS 64.6.65.6"' >> /etc/openvpn/server.conf
+		;;
+	esac
+	echo 
+"block-outside-dns
 status /dev/null #/var/log/ovpn-status.log
 log /dev/null #/var/log/ovpn.log
 script-security 2 system
@@ -354,14 +396,18 @@ tls-client
 comp-lzo
 daemon
 script-security 2 system
+auth SHA512
 cipher AES-256-CBC
 #user nobody
 #group nobody
+resolv-retry infinite
+nobind
 persist-key
 persist-tun
 verb 3
 status /dev/null #/var/log/opvn-status.log
 log /dev/null #/var/log/ovpn.log
+setenv opt block-outside-dns
 key-direction 1
 up /etc/openvpn/up_s2s.sh" > /etc/openvpn/client-common.txt
 	# Generates the custom client.ovpn
@@ -372,3 +418,5 @@ up /etc/openvpn/up_s2s.sh" > /etc/openvpn/client-common.txt
 	echo "Your client configuration is available at" ~/"$CLIENT.ovpn"
 	echo "If you want to add more clients, you simply need to run this script again!"
 fi
+
+	echo "Warning! The system has been reboot now"
