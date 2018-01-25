@@ -399,7 +399,7 @@ verb 3" > /etc/openvpn/client-common.txt
 	
 	
 	sleep 3
-clean
+clear
 
 	echo "Warning! Next step! Enter Remote IP and Password"
 	
@@ -418,7 +418,7 @@ ssh root@$IP 'export TERM=xterm && wget https://raw.githubusercontent.com/retomo
  echo ""
  echo ""
  echo ""
- clean
+ clear
  echo "Then enter password exit node again! If you skip this step setup will not complited!"
 
  echo ""
@@ -468,6 +468,9 @@ fi
 		fi
 	fi
 	
-clean
-
+clear
+ echo "Enter password Exit node!"
+ssh root@$IP 'reboot'
+clear
+ echo "#Copy this config for your OpenVPN client"
 cat ~/$CLIENT.ovpn
