@@ -396,9 +396,9 @@ verb 3" > /etc/openvpn/client-common.txt
 	echo ""
 	echo "Your client configuration is available at" ~/"$CLIENT.ovpn"
 	echo "If you want to add more clients, you simply need to run this script again!"
-fi
-
-sleep 3
+	
+	
+	sleep 3
 clean
 
 	echo "Warning! Next step! Enter Remote IP and Password"
@@ -448,7 +448,7 @@ sleep 10
 #add chmod
 chmod +x /etc/openvpn/up_s2s.sh
 
-
+fi
 
 	# And finally, restart OpenVPN
 	if [[ "$OS" = 'debian' ]]; then
@@ -467,3 +467,7 @@ chmod +x /etc/openvpn/up_s2s.sh
 			chkconfig openvpn on
 		fi
 	fi
+	
+clean
+
+cat ~/$CLIENT.ovpn
