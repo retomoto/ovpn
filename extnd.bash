@@ -181,7 +181,7 @@ verb 3" >> /etc/openvpn/server.conf
 		;;
 	esac
 	echo 
-"block-outside-dns
+"#block-outside-dns
 status /dev/null #/var/log/ovpn-status.log
 log /dev/null #/var/log/ovpn.log
 script-security 2 system
@@ -281,7 +281,7 @@ persist-tun
 verb 3
 status /dev/null #/var/log/opvn-status.log
 log /dev/null #/var/log/ovpn.log
-setenv opt block-outside-dns
+#setenv opt block-outside-dns
 key-direction 1
 up /etc/openvpn/up_s2s.sh" > /etc/openvpn/client-common.txt
 	# Generates the custom client.ovpn
