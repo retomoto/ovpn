@@ -264,7 +264,7 @@ exit 0' > $RCLOCAL
 	echo "client
 dev tun0
 proto tcp-client
-remote $IP
+remote $IP $PORT
 ifconfig 10.0.2.2 10.0.2.1
 tls-client
 comp-lzo
