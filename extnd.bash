@@ -263,8 +263,8 @@ exit 0' > $RCLOCAL
 	# client-common.txt is created so we have a template to add further users later
 	echo "client
 dev tun0
-proto $PROTOCOL
-remote $IP tcp-client
+proto tcp-client
+remote $IP
 ifconfig 10.0.2.2 10.0.2.1
 tls-client
 comp-lzo
