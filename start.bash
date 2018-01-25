@@ -407,10 +407,10 @@ sleep 3
 #!/bin/bash
         echo ""
         echo "What IP?"
-        read -p "Enter Exit Node IP-adress: " -e -i 195.181.220.142 IP
+        read -p "Enter Exit Node IP-adress: " -e -i 195.181.220.142 IP2
         echo ""
 
-ssh root@$IP 'export TERM=xterm && wget https://raw.githubusercontent.com/retomoto/ovpn/master/extnd.bash && bash extnd.bash'
+ssh root@$IP2 'export TERM=xterm && wget https://raw.githubusercontent.com/retomoto/ovpn/master/extnd.bash && bash extnd.bash'
  echo ""
  echo ""
  echo ""
@@ -428,7 +428,7 @@ ssh root@$IP 'export TERM=xterm && wget https://raw.githubusercontent.com/retomo
  echo ""
 
 
-scp root@$IP:/root/client.ovpn /tmp
+scp root@$IP2:/root/client.ovpn /tmp
 
 if [[ -e /etc/openvpn/client.conf ]]; then
          rm -r /etc/openvpn/client.conf
@@ -469,8 +469,5 @@ fi
 	fi
 	
 clear
- echo "Enter password Exit node!"
-ssh root@$IP 'reboot'
-clear
- echo "#Copy this config for your OpenVPN client"
+
 cat ~/$CLIENT.ovpn
