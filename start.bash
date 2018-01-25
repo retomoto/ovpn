@@ -307,6 +307,7 @@ user nobody
 group $GROUPNAME
 persist-key
 persist-tun
+#block-outside-dns
 status openvpn-status.log
 verb 3" >> /etc/openvpn/server.conf
 	# Enable net.ipv4.ip_forward for the system
@@ -386,7 +387,7 @@ remote-cert-tls server
 auth SHA512
 cipher AES-256-CBC
 comp-lzo
-setenv opt block-outside-dns
+#setenv opt block-outside-dns
 key-direction 1
 verb 3" > /etc/openvpn/client-common.txt
 	# Generates the custom client.ovpn
