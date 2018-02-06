@@ -1,4 +1,4 @@
-n#!/bin/bash
+#!/bin/bash
 # SERVER-2
 
 # Detect Debian users running the script with "sh" instead of bash
@@ -63,10 +63,8 @@ fi
 	clear
 	PROTOCOL=tcp
 	PORT=443
-	DNS=2
 	CLIENT=client
-	echo ""
-	echo "Okay, that was all I needed. We are ready to setup your OpenVPN server now"
+
 	if [[ "$OS" = 'debian' ]]; then
 		apt-get update
 		apt-get install openvpn iptables openssl ca-certificates -y
@@ -125,46 +123,8 @@ sndbuf 0
 rcvbuf 0
 push "sndbuf 393216"
 push "rcvbuf 393216"
-
-verb 3" >> /etc/openvpn/server.conf
-
-# DNS
-	case $DNS in
-		1) 
-		# Locate the proper resolv.conf
-		# Needed for systems running systemd-resolved
-		if grep -q "127.0.0.53" "/etc/resolv.conf"; then
-			RESOLVCONF='/run/systemd/resolve/resolv.conf'
-		else
-			RESOLVCONF='/etc/resolv.conf'
-		fi
-		# Obtain the resolvers from resolv.conf and use them for OpenVPN
-		grep -v '#' $RESOLVCONF | grep 'nameserver' | grep -E -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | while read line; do
-			echo "push \"dhcp-option DNS $line\"" >> /etc/openvpn/server.conf
-		done
-		;;
-		2) 
-		echo 'push "dhcp-option DNS 8.8.8.8"' >> /etc/openvpn/server.conf
-		echo 'push "dhcp-option DNS 8.8.4.4"' >> /etc/openvpn/server.conf
-		;;
-		3)
-		echo 'push "dhcp-option DNS 208.67.222.222"' >> /etc/openvpn/server.conf
-		echo 'push "dhcp-option DNS 208.67.220.220"' >> /etc/openvpn/server.conf
-		;;
-		4) 
-		echo 'push "dhcp-option DNS 129.250.35.250"' >> /etc/openvpn/server.conf
-		echo 'push "dhcp-option DNS 129.250.35.251"' >> /etc/openvpn/server.conf
-		;;
-		5) 
-		echo 'push "dhcp-option DNS 74.82.42.42"' >> /etc/openvpn/server.conf
-		;;
-		6) 
-		echo 'push "dhcp-option DNS 64.6.64.6"' >> /etc/openvpn/server.conf
-		echo 'push "dhcp-option DNS 64.6.65.6"' >> /etc/openvpn/server.conf
-		;;
-	esac
-	echo 
-"#block-outside-dns
+verb 3
+block-outside-dns
 status /dev/null #/var/log/ovpn-status.log
 log /dev/null #/var/log/ovpn.log
 script-security 2 system
@@ -185,35 +145,13 @@ chmod +x /etc/openvpn/up.sh
 	fi
 	# Avoid an unneeded reboot
 	echo 1 > /proc/sys/net/ipv4/ip_forward
-	
-	if pgrep firewalld; then
-		# Using both permanent and not permanent rules to avoid a firewalld
-		# reload.
-		# We don't use --add-service=openvpn because that would only work with
-		# the default port and protocol.
-		#firewall-cmd --zone=public --add-port=$PORT/$PROTOCOL
-		#firewall-cmd --zone=trusted --add-source=10.0.2.0/24
-		#firewall-cmd --permanent --zone=public --add-port=$PORT/$PROTOCOL
-		#firewall-cmd --permanent --zone=trusted --add-source=10.0.2.0/24
-	else
+
 		# Needed to use rc.local with some systemd distros
 		if [[ "$OS" = 'debian' && ! -e $RCLOCAL ]]; then
 			echo '#!/bin/sh -e
 exit 0' > $RCLOCAL
 		fi
 		chmod +x $RCLOCAL
-		sed -i "1 a\iptables -t nat -A POSTROUTING -s 10.0.2.0/24 ! -d 10.0.2.0/24 -j SNAT --to $IP" $RCLOCAL
-		if iptables -L -n | grep -qE '^(REJECT|DROP)'; then
-			# If iptables has at least one REJECT rule, we asume this is needed.
-			# Not the best approach but I can't think of other and this shouldn't
-			# cause problems.
-			#iptables -I INPUT -p $PROTOCOL --dport $PORT -j ACCEPT
-			#iptables -I FORWARD -s 10.0.2.0/24 -j ACCEPT
-			#iptables -I FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
-			#sed -i "1 a\iptables -I INPUT -p $PROTOCOL --dport $PORT -j ACCEPT" $RCLOCAL
-			#sed -i "1 a\iptables -I FORWARD -s 10.0.2.0/24 -j ACCEPT" $RCLOCAL
-			#sed -i "1 a\iptables -I FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT" $RCLOCAL
-		fi
 	fi
 	# If SELinux is enabled and a custom port or TCP was selected, we need this
 	if hash sestatus 2>/dev/null; then
@@ -257,7 +195,8 @@ exit 0' > $RCLOCAL
 			IP=$USEREXTERNALIP
 		fi
 	fi
-	# client-common.txt is created so we have a template to add further users later
+
+		# client-common.txt is created so we have a template to add further users later
 
 		echo "client
 		dev tun0
@@ -281,7 +220,7 @@ exit 0' > $RCLOCAL
 		up /etc/openvpn/up_s2s.sh
 		key-direction 1
 		#setenv opt block-outside-dns" > /etc/openvpn/client-common.txt
-
+	
 	# Generates the custom client.ovpn
 	newclient "$CLIENT"
 	echo ""
