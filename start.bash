@@ -125,7 +125,7 @@ if [[ -e /etc/openvpn/server.conf ]]; then
 				PORT=$(grep '^port ' /etc/openvpn/server.conf | cut -d " " -f 2)
 				PROTOCOL=$(grep '^proto ' /etc/openvpn/server.conf | cut -d " " -f 2)
 				if pgrep firewalld; then
-					IP=$(firewall-cmd --direct --get-rules ipv4 nat POSTROUTING | grep '\-s 10.0.1.0/24 '"'"'!'"'"' -d 10.0.1.0/24 -j SNAT --to ' | cut -d " " -f 10)
+					#IP=$(firewall-cmd --direct --get-rules ipv4 nat POSTROUTING | grep '\-s 10.0.1.0/24 '"'"'!'"'"' -d 10.0.1.0/24 -j SNAT --to ' | cut -d " " -f 10)
 					# Using both permanent and not permanent rules to avoid a firewalld reload.
 					#firewall-cmd --zone=public --remove-port=$PORT/$PROTOCOL
 					#firewall-cmd --zone=trusted --remove-source=10.0.1.0/24
@@ -133,7 +133,7 @@ if [[ -e /etc/openvpn/server.conf ]]; then
 					#firewall-cmd --permanent --zone=trusted --remove-source=10.0.1.0/24
 					ls
 				else
-					IP=$(grep 'iptables -t nat -A POSTROUTING -s 10.0.1.0/24 ! -d 10.0.1.0/24 -j SNAT --to ' $RCLOCAL | cut -d " " -f 14)
+					#IP=$(grep 'iptables -t nat -A POSTROUTING -s 10.0.1.0/24 ! -d 10.0.1.0/24 -j SNAT --to ' $RCLOCAL | cut -d " " -f 14)
 					if iptables -L -n | grep -qE '^ACCEPT'; then
 						#iptables -D INPUT -p $PROTOCOL --dport $PORT -j ACCEPT
 						#iptables -D FORWARD -s 10.0.1.0/24 -j ACCEPT
@@ -236,9 +236,7 @@ else
 	
 	
 	# Generate server.conf
-	echo "
-
-local $IP
+	echo "local $IP
 port $PORT
 proto $PROTOCOL
 dev tun1
@@ -295,7 +293,7 @@ mute 20" >> /etc/openvpn/server.conf
 exit 0' > $RCLOCAL
 		fi
 		chmod +x $RCLOCAL
-		sed -i "1 a\iptables -t nat -A POSTROUTING -s 10.0.1.0/24 ! -d 10.0.1.0/24 -j SNAT --to $IP" $RCLOCAL
+		#sed -i "1 a\iptables -t nat -A POSTROUTING -s 10.0.1.0/24 ! -d 10.0.1.0/24 -j SNAT --to $IP" $RCLOCAL
 		if iptables -L -n | grep -qE '^(REJECT|DROP)'; then
 			# If iptables has at least one REJECT rule, we asume this is needed.
 			# Not the best approach but I can't think of other and this shouldn't
@@ -377,21 +375,9 @@ sleep 3
         echo ""
 
 ssh root@$IP2 'export TERM=xterm && wget https://raw.githubusercontent.com/retomoto/ovpn/master/extnd.bash && bash extnd.bash'
- echo ""
- echo ""
- echo ""
- echo ""
- echo ""
- echo ""
- echo ""
+
  clear
  echo "Then enter password exit node again! If you skip this step setup will not complited!"
-
- echo ""
- echo ""
- echo ""
- echo ""
- echo ""
 
 
 scp root@$IP2:/root/client.ovpn /tmp
@@ -407,9 +393,9 @@ service openvpn restart
 
 #Generate up_s2s.sh
 	echo "#!/bin/bash
-	sleep 10
-	/sbin/ip route add default via 10.0.2.1 dev tun0 table 10
-	/sbin/ip rule add from 10.0.1.0/24 lookup 10 pref 10" >> /etc/openvpn/up_s2s.sh
+sleep 10
+/sbin/ip route add default via 10.0.2.1 dev tun0 table 10
+/sbin/ip rule add from 10.0.1.0/24 lookup 10 pref 10" >> /etc/openvpn/up_s2s.sh
 #add chmod
 chmod +x /etc/openvpn/up_s2s.sh
 
