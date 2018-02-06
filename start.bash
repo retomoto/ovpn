@@ -131,6 +131,7 @@ if [[ -e /etc/openvpn/server.conf ]]; then
 					#firewall-cmd --zone=trusted --remove-source=10.0.1.0/24
 					#firewall-cmd --permanent --zone=public --remove-port=$PORT/$PROTOCOL
 					#firewall-cmd --permanent --zone=trusted --remove-source=10.0.1.0/24
+					ls
 				else
 					IP=$(grep 'iptables -t nat -A POSTROUTING -s 10.0.1.0/24 ! -d 10.0.1.0/24 -j SNAT --to ' $RCLOCAL | cut -d " " -f 14)
 					if iptables -L -n | grep -qE '^ACCEPT'; then
@@ -140,6 +141,7 @@ if [[ -e /etc/openvpn/server.conf ]]; then
 						#sed -i "/iptables -I INPUT -p $PROTOCOL --dport $PORT -j ACCEPT/d" $RCLOCAL
 						#sed -i "/iptables -I FORWARD -s 10.0.1.0\/24 -j ACCEPT/d" $RCLOCAL
 						#sed -i "/iptables -I FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT/d" $RCLOCAL
+						ls
 					fi
 				fi
 				if hash sestatus 2>/dev/null; then
@@ -285,6 +287,7 @@ mute 20" >> /etc/openvpn/server.conf
 		#firewall-cmd --zone=trusted --add-source=10.0.1.0/24
 		#firewall-cmd --permanent --zone=public --add-port=$PORT/$PROTOCOL
 		#firewall-cmd --permanent --zone=trusted --add-source=10.0.1.0/24
+		ls
 	else
 		# Needed to use rc.local with some systemd distros
 		if [[ "$OS" = 'debian' && ! -e $RCLOCAL ]]; then
@@ -303,6 +306,7 @@ exit 0' > $RCLOCAL
 			#sed -i "1 a\iptables -I INPUT -p $PROTOCOL --dport $PORT -j ACCEPT" $RCLOCAL
 			#sed -i "1 a\iptables -I FORWARD -s 10.0.1.0/24 -j ACCEPT" $RCLOCAL
 			#sed -i "1 a\iptables -I FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT" $RCLOCAL
+			ls
 		fi
 	fi
 	# If SELinux is enabled and a custom port or TCP was selected, we need this
