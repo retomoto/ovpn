@@ -198,28 +198,28 @@ exit 0' > $RCLOCAL
 
 		# client-common.txt is created so we have a template to add further users later
 
-		echo "client
-		dev tun0
-		remote $IP
-		port $PORT
-		proto tcp-client
-		ifconfig 10.0.2.2 10.0.2.1
-		tls-client
-		comp-lzo
-		#daemon
-		script-security 2 system
-		auth SHA512
-		cipher AES-256-CBC
-		#user nobody
-		#group nobody
-		persist-key
-		persist-tun
-		verb 3
-		status /var/log/opvn-status.log
-		log /var/log/ovpn.log
-		up /etc/openvpn/up_s2s.sh
-		key-direction 1
-		#setenv opt block-outside-dns" > /etc/openvpn/client-common.txt
+echo "client
+dev tun0
+remote $IP
+port $PORT
+proto tcp-client
+ifconfig 10.0.2.2 10.0.2.1
+tls-client
+comp-lzo
+#daemon
+script-security 2 system
+auth SHA512
+cipher AES-256-CBC
+#user nobody
+#group nobody
+persist-key
+persist-tun
+verb 3
+status /var/log/opvn-status.log
+log /var/log/ovpn.log
+up /etc/openvpn/up_s2s.sh
+key-direction 1
+#setenv opt block-outside-dns" > /etc/openvpn/client-common.txt
 	
 	# Generates the custom client.ovpn
 	newclient "$CLIENT"
