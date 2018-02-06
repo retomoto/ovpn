@@ -1,12 +1,5 @@
-#!/bin/bash
-# OpenVPN road warrior installer for Debian, Ubuntu and CentOS
-
-# This script will work on Debian, Ubuntu, CentOS and probably other distros
-# of the same families, although no support is offered for them. It isn't
-# bulletproof but it will probably work if you simply want to setup a VPN on
-# your Debian/Ubuntu/CentOS box. It has been designed to be as unobtrusive and
-# universal as possible.
-
+n#!/bin/bash
+# SERVER-2
 
 # Detect Debian users running the script with "sh" instead of bash
 if readlink /proc/$$/exe | grep -qs "dash"; then
@@ -68,20 +61,8 @@ if [[ "$IP" = "" ]]; then
 fi
 
 	clear
-	echo 'Welcome to this quick OpenVPN "road warrior" installer'
-	echo ""
-	# OpenVPN setup and first user creation
-	echo "I need to ask you a few questions before starting the setup"
-	echo "You can leave the default options and just press enter if you are ok with them"
-	echo ""
-	echo "First I need to know the IPv4 address of the network interface you want OpenVPN"
-	echo "listening to."
-	echo ""
-		PROTOCOL=tcp-server
-	echo ""
-	echo "What port do you want OpenVPN listening to?"
+	PROTOCOL=tcp
 	PORT=443
-	echo ""
 	DNS=2
 	CLIENT=client
 	echo ""
@@ -122,13 +103,10 @@ fi
 
 # Generate server.conf
 	echo "port $PORT
-dev tun
-sndbuf 0
-rcvbuf 0
-proto $PROTOCOL
+dev tun0
+proto tcp-server
 tls-server
 ifconfig 10.0.2.1 10.0.2.2
-keepalive 10 120
 comp-lzo
 daemon
 ca ca.crt
@@ -190,10 +168,11 @@ route-up up.sh" >> /etc/openvpn/server.conf
 #Generate up.sh
 	echo "#!/bin/bash
 IP=$(ifconfig eth0| sed -n '2 {s/^.*inet addr:\([0-9.]*\) .*/\1/;p}')
-/sbin/ip route add 10.0.1.0/24 via 10.0.2.2 dev tun0
-/sbin/iptables -t nat -A POSTROUTING --src 10.0.1.0/24 -o eth0 -j SNAT --to-source $IP" >> /etc/openvpn/up.sh
+/sbin/ip route add 10.0.2.0/24 via 10.0.2.2 dev tun0
+/sbin/iptables -t nat -A POSTROUTING --src 10.0.2.0/24 -o eth0 -j SNAT --to-source $IP" >> /etc/openvpn/up.sh
 #add chmod
 chmod +x /etc/openvpn/up.sh
+
 	# Enable net.ipv4.ip_forward for the system
 	sed -i '/\<net.ipv4.ip_forward\>/c\net.ipv4.ip_forward=1' /etc/sysctl.conf
 	if ! grep -q "\<net.ipv4.ip_forward\>" /etc/sysctl.conf; then
@@ -201,15 +180,16 @@ chmod +x /etc/openvpn/up.sh
 	fi
 	# Avoid an unneeded reboot
 	echo 1 > /proc/sys/net/ipv4/ip_forward
+	
 	if pgrep firewalld; then
 		# Using both permanent and not permanent rules to avoid a firewalld
 		# reload.
 		# We don't use --add-service=openvpn because that would only work with
 		# the default port and protocol.
-		firewall-cmd --zone=public --add-port=$PORT/$PROTOCOL
-		firewall-cmd --zone=trusted --add-source=10.0.2.0/24
-		firewall-cmd --permanent --zone=public --add-port=$PORT/$PROTOCOL
-		firewall-cmd --permanent --zone=trusted --add-source=10.0.2.0/24
+		#firewall-cmd --zone=public --add-port=$PORT/$PROTOCOL
+		#firewall-cmd --zone=trusted --add-source=10.0.2.0/24
+		#firewall-cmd --permanent --zone=public --add-port=$PORT/$PROTOCOL
+		#firewall-cmd --permanent --zone=trusted --add-source=10.0.2.0/24
 	else
 		# Needed to use rc.local with some systemd distros
 		if [[ "$OS" = 'debian' && ! -e $RCLOCAL ]]; then
@@ -217,6 +197,18 @@ chmod +x /etc/openvpn/up.sh
 exit 0' > $RCLOCAL
 		fi
 		chmod +x $RCLOCAL
+		sed -i "1 a\iptables -t nat -A POSTROUTING -s 10.0.2.0/24 ! -d 10.0.2.0/24 -j SNAT --to $IP" $RCLOCAL
+		if iptables -L -n | grep -qE '^(REJECT|DROP)'; then
+			# If iptables has at least one REJECT rule, we asume this is needed.
+			# Not the best approach but I can't think of other and this shouldn't
+			# cause problems.
+			#iptables -I INPUT -p $PROTOCOL --dport $PORT -j ACCEPT
+			#iptables -I FORWARD -s 10.0.2.0/24 -j ACCEPT
+			#iptables -I FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
+			#sed -i "1 a\iptables -I INPUT -p $PROTOCOL --dport $PORT -j ACCEPT" $RCLOCAL
+			#sed -i "1 a\iptables -I FORWARD -s 10.0.2.0/24 -j ACCEPT" $RCLOCAL
+			#sed -i "1 a\iptables -I FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT" $RCLOCAL
+		fi
 	fi
 	# If SELinux is enabled and a custom port or TCP was selected, we need this
 	if hash sestatus 2>/dev/null; then
@@ -261,29 +253,30 @@ exit 0' > $RCLOCAL
 		fi
 	fi
 	# client-common.txt is created so we have a template to add further users later
-	echo "client
-dev tun0
-proto tcp-client
-remote $IP $PORT
-ifconfig 10.0.2.2 10.0.2.1
-tls-client
-comp-lzo
-daemon
-script-security 2 system
-auth SHA512
-cipher AES-256-CBC
-#user nobody
-#group nobody
-resolv-retry infinite
-nobind
-persist-key
-persist-tun
-verb 3
-status /dev/null #/var/log/opvn-status.log
-log /dev/null #/var/log/ovpn.log
-#setenv opt block-outside-dns
-key-direction 1
-up /etc/openvpn/up_s2s.sh" > /etc/openvpn/client-common.txt
+
+		echo "client
+		dev tun0
+		remote $IP
+		port $PORT
+		proto tcp-client
+		ifconfig 10.0.2.2 10.0.2.1
+		tls-client
+		comp-lzo
+		#daemon
+		script-security 2 system
+		auth SHA512
+		cipher AES-256-CBC
+		#user nobody
+		#group nobody
+		persist-key
+		persist-tun
+		verb 3
+		status /var/log/opvn-status.log
+		log /var/log/ovpn.log
+		up /etc/openvpn/up_s2s.sh
+		key-direction 1
+		#setenv opt block-outside-dns" > /etc/openvpn/client-common.txt
+
 	# Generates the custom client.ovpn
 	newclient "$CLIENT"
 	echo ""
