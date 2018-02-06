@@ -242,8 +242,8 @@ proto $PROTOCOL
 dev tun1
 sndbuf 0
 rcvbuf 0
-push "sndbuf 393216"
-push "rcvbuf 393216"
+push 'sndbuf 393216'
+push 'rcvbuf 393216'
 ca ca.crt
 cert server.crt
 key server.key
@@ -252,9 +252,9 @@ tls-auth ta.key 0
 auth SHA512
 ;topology subnet
 server 10.0.1.0 255.255.255.0
-push "redirect-gateway def1 bypass-dhcp"
-push "dhcp-option DNS 8.8.8.8"
-push "dhcp-option DNS 8.8.4.4"
+push 'redirect-gateway def1 bypass-dhcp'
+push 'dhcp-option DNS 8.8.8.8'
+push 'dhcp-option DNS 8.8.4.4'
 keepalive 10 120
 cipher AES-256-CBC
 comp-lzo
