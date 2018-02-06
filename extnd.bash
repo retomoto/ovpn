@@ -121,6 +121,11 @@ cipher AES-256-CBC
 max-clients 1
 persist-key
 persist-tun
+sndbuf 0
+rcvbuf 0
+push "sndbuf 393216"
+push "rcvbuf 393216"
+
 verb 3" >> /etc/openvpn/server.conf
 
 # DNS
