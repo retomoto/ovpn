@@ -269,8 +269,6 @@ verb 4
 mute 20" >> /etc/openvpn/server.conf
 
 
-
-
 	# Enable net.ipv4.ip_forward for the system
 	sed -i '/\<net.ipv4.ip_forward\>/c\net.ipv4.ip_forward=1' /etc/sysctl.conf
 	if ! grep -q "\<net.ipv4.ip_forward\>" /etc/sysctl.conf; then
@@ -405,15 +403,13 @@ service openvpn restart
 
 #Generate up_s2s.sh
 	echo "#!/bin/bash
-#!/bin/bash
-sleep 10
-/sbin/ip route add default via 10.0.2.1 dev tun0 table 10
-/sbin/ip rule add from 10.0.1.0/24 lookup 10 pref 10" >> /etc/openvpn/up_s2s.sh
+	sleep 10
+	/sbin/ip route add default via 10.0.2.1 dev tun0 table 10
+	/sbin/ip rule add from 10.0.1.0/24 lookup 10 pref 10" >> /etc/openvpn/up_s2s.sh
 #add chmod
 chmod +x /etc/openvpn/up_s2s.sh
 
 fi
-
 	# And finally, restart OpenVPN
 	if [[ "$OS" = 'debian' ]]; then
 		# Little hack to check for systemd
