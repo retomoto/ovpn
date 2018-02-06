@@ -152,7 +152,7 @@ chmod +x /etc/openvpn/up.sh
 exit 0' > $RCLOCAL
 		fi
 		chmod +x $RCLOCAL
-	fi
+		
 	# If SELinux is enabled and a custom port or TCP was selected, we need this
 	if hash sestatus 2>/dev/null; then
 		if sestatus | grep "Current mode" | grep -qs "enforcing"; then
