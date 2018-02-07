@@ -266,7 +266,6 @@ persist-tun
 status /var/log/ovpnsrv-status.log
 log /var/log/ovpnsrv.log
 verb 4
-block-outside-dns
 mute 20" >> /etc/openvpn/server.conf
 
 
