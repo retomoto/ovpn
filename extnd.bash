@@ -134,11 +134,9 @@ route-up up.sh" >> /etc/openvpn/server.conf
 
 #Generate up.sh
 echo "#!/bin/bash
-
 # A Sample OpenVPN-aware firewall.
 
 # eth0 is connected to the internet.
-
 # Loopback address
 LOOP=127.0.0.1
 
