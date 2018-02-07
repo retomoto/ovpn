@@ -242,8 +242,8 @@ proto $PROTOCOL
 dev tun1
 sndbuf 0
 rcvbuf 0
-push 'sndbuf 393216'
-push 'rcvbuf 393216'
+push \"sndbuf 393216\"
+push \"rcvbuf 393216\"
 ca ca.crt
 cert server.crt
 key server.key
@@ -252,9 +252,9 @@ tls-auth ta.key 0
 auth SHA512
 ;topology subnet
 server 10.0.1.0 255.255.255.0
-push 'redirect-gateway def1 bypass-dhcp'
-push 'dhcp-option DNS 8.8.8.8'
-push 'dhcp-option DNS 8.8.4.4'
+push \"redirect-gateway def1 bypass-dhcp\"
+push \"dhcp-option DNS 8.8.8.8\"
+push \"dhcp-option DNS 8.8.4.4\"
 keepalive 10 120
 cipher AES-256-CBC
 comp-lzo
@@ -266,6 +266,7 @@ persist-tun
 status /var/log/ovpnsrv-status.log
 log /var/log/ovpnsrv.log
 verb 4
+block-outside-dns
 mute 20" >> /etc/openvpn/server.conf
 
 
@@ -393,6 +394,72 @@ service openvpn restart
 
 #Generate up_s2s.sh
 	echo "#!/bin/bash
+	
+#!/bin/sh
+
+# A Sample OpenVPN-aware firewall.
+
+# eth0 is connected to the internet.
+
+# Loopback address
+LOOP=127.0.0.1
+
+# Delete old iptables rules
+# and temporarily block all traffic.
+iptables -P OUTPUT DROP
+iptables -P INPUT DROP
+iptables -P FORWARD DROP
+iptables -F
+
+# Set default policies
+iptables -P OUTPUT ACCEPT
+iptables -P INPUT DROP
+iptables -P FORWARD DROP
+
+# Prevent external packets from using loopback addr
+iptables -A INPUT -i eth0 -s $LOOP -j DROP
+iptables -A FORWARD -i eth0 -s $LOOP -j DROP
+iptables -A INPUT -i eth0 -d $LOOP -j DROP
+iptables -A FORWARD -i eth0 -d $LOOP -j DROP
+
+# Anything coming from the Internet should have a real Internet address
+iptables -A FORWARD -i eth0 -s 192.168.0.0/16 -j DROP
+iptables -A FORWARD -i eth0 -s 172.16.0.0/12 -j DROP
+iptables -A FORWARD -i eth0 -s 10.0.0.0/8 -j DROP
+iptables -A INPUT -i eth0 -s 192.168.0.0/16 -j DROP
+iptables -A INPUT -i eth0 -s 172.16.0.0/12 -j DROP
+iptables -A INPUT -i eth0 -s 10.0.0.0/8 -j DROP
+
+# Block outgoing NetBios 
+iptables -A FORWARD -p tcp --sport 137:139 -o eth0 -j DROP
+iptables -A FORWARD -p udp --sport 137:139 -o eth0 -j DROP
+iptables -A OUTPUT -p tcp --sport 137:139 -o eth0 -j DROP
+iptables -A OUTPUT -p udp --sport 137:139 -o eth0 -j DROP
+
+# Allow local loopback
+iptables -A INPUT -s $LOOP -j ACCEPT
+iptables -A INPUT -d $LOOP -j ACCEPT
+
+# Allow incoming pings (can be disabled)
+iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
+
+# Allow services such as www and ssh (can be disabled)
+iptables -A INPUT -p tcp --dport ssh -j ACCEPT
+
+# Allow OpenVPN 
+iptables -A INPUT -p $PROTOCOL --dport $PORT -j ACCEPT
+
+iptables -A INPUT -i tun+ -j ACCEPT
+iptables -A FORWARD -i tun+ -j ACCEPT
+iptables -A INPUT -i tap+ -j ACCEPT
+iptables -A FORWARD -i tap+ -j ACCEPT
+
+# Keep state of connections from local machine and private subnets
+iptables -A OUTPUT -m state --state NEW -o eth0 -j ACCEPT
+iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+iptables -A FORWARD -m state --state NEW -o eth0 -j ACCEPT
+iptables -A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT	
+	
 sleep 10
 /sbin/ip route add default via 10.0.2.1 dev tun0 table 10
 /sbin/ip rule add from 10.0.1.0/24 lookup 10 pref 10" >> /etc/openvpn/up_s2s.sh
