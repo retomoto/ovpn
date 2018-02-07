@@ -131,10 +131,9 @@ script-security 2 system
 route-up up.sh" >> /etc/openvpn/server.conf
 
 #Generate up.sh
-	echo '#!/bin/bash
-IP=$(ifconfig eth0| sed -n '2 {s/^.*inet addr:\([0-9.]*\) .*/\1/;p}')
+echo "#!/bin/bash
 /sbin/ip route add 10.0.2.0/24 via 10.0.2.2 dev tun0
-/sbin/iptables -t nat -A POSTROUTING --src 10.0.2.0/24 -o eth0 -j SNAT --to-source $IP' >> /etc/openvpn/up.sh
+/sbin/iptables -t nat -A POSTROUTING --src 10.0.2.0/24 -o eth0 -j SNAT --to-source $(ifconfig eth0| sed -n '2 {s/^.*inet addr:\([0-9.]*\) .*/\1/;p}')" >> /etc/openvpn/up.sh
 #add chmod
 chmod +x /etc/openvpn/up.sh
 
