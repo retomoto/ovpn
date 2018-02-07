@@ -251,7 +251,9 @@ dh dh.pem
 tls-auth ta.key 0
 auth SHA512
 ;topology subnet
-server 10.0.1.0 255.255.255.0
+ifconfig 10.0.1.1 255.255.255.0 # Внутренний IP сервера
+ifconfig-pool 10.0.1.2 10.0.1.100 # Пул адресов.
+#server 10.0.1.0 255.255.255.0
 push \"redirect-gateway def1 bypass-dhcp\"
 push \"dhcp-option DNS 8.8.8.8\"
 push \"dhcp-option DNS 8.8.4.4\"
