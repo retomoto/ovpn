@@ -62,7 +62,8 @@ fi
 
 	clear
 	PROTOCOL=tcp
-	echo "What port do you want OpenVPN listening to?"
+	clear
+	echo "What port do you want OpenVPN listening to? By default use 443. Enter for accept."
 	read -p "Port: " -e -i 443 PORT
 	echo ""
 	CLIENT=client
