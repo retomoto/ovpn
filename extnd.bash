@@ -295,5 +295,4 @@ key-direction 1
 	echo "If you want to add more clients, you simply need to run this script again!"
 
 	echo "Warning! The system has been reboot now"
-sleep 60
-reboot
+	nohup sleep 30 && reboot >/dev/null &
