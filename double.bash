@@ -361,15 +361,11 @@ key-direction 1
 	echo ""
 	echo "Your client configuration is available at" ~/"$CLIENT.ovpn"
 	echo "If you want to add more clients, you simply need to run this script again!"
-	
-	
-	sleep 3
-clear
+		
+	sleep 2
 
 	echo "Warning! Next step! Enter Remote IP and Password"
-	
-sleep 3	
-#!/bin/bash
+sleep 2
         echo ""
         echo "What IP?"
         read -p "Enter Exit Node IP-adress: " -e -i 195.181.220.142 IP2
@@ -377,9 +373,7 @@ sleep 3
 
 ssh root@$IP2 'export TERM=xterm && wget https://raw.githubusercontent.com/retomoto/ovpn/master/extnd.bash && bash extnd.bash'
 
- clear
  echo "Then enter password exit node again! If you skip this step setup will not complited!"
-
 
 scp root@$IP2:/root/client.ovpn /tmp
 
@@ -390,17 +384,11 @@ else
         mv /tmp/client.ovpn /etc/openvpn/client.conf
 fi
 
-service openvpn restart
-
 #Generate up_s2s.sh
 	echo "#!/bin/bash
-	
-#!/bin/sh
-
 # A Sample OpenVPN-aware firewall.
 
 # eth0 is connected to the internet.
-
 # Loopback address
 LOOP=127.0.0.1
 
@@ -488,3 +476,4 @@ fi
 clear
 
 cat ~/$CLIENT.ovpn
+reboot
