@@ -135,7 +135,7 @@ route-up up.sh" >> /etc/openvpn/server.conf
 #Generate up.sh
 echo "#!/bin/bash
 # A Sample OpenVPN-aware firewall.
-
+sleep 10
 # eth0 is connected to the internet.
 # Loopback address
 LOOP=127.0.0.1
@@ -177,7 +177,7 @@ LOOP=127.0.0.1
 /sbin/iptables -A INPUT -d $LOOP -j ACCEPT
 
 # Allow incoming pings (can be disabled)
-/sbin/iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
+/sbin/iptables -A INPUT -p icmp --icmp-type echo-request -j DROP
 
 # Allow services such as www and ssh (can be disabled)
 /sbin/iptables -A INPUT -p tcp --dport ssh -j ACCEPT
