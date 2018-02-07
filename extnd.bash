@@ -141,61 +141,61 @@ echo "#!/bin/bash
 # Loopback address
 LOOP=127.0.0.1
 
-# Delete old iptables rules
+# Delete old /sbin/iptables rules
 # and temporarily block all traffic.
-iptables -P OUTPUT DROP
-iptables -P INPUT DROP
-iptables -P FORWARD DROP
-iptables -F
+/sbin/iptables -P OUTPUT DROP
+/sbin/iptables -P INPUT DROP
+/sbin/iptables -P FORWARD DROP
+/sbin/iptables -F
 
 # Set default policies
-iptables -P OUTPUT ACCEPT
-iptables -P INPUT DROP
-iptables -P FORWARD DROP
+/sbin/iptables -P OUTPUT ACCEPT
+/sbin/iptables -P INPUT DROP
+/sbin/iptables -P FORWARD DROP
 
 # Prevent external packets from using loopback addr
-iptables -A INPUT -i eth0 -s $LOOP -j DROP
-iptables -A FORWARD -i eth0 -s $LOOP -j DROP
-iptables -A INPUT -i eth0 -d $LOOP -j DROP
-iptables -A FORWARD -i eth0 -d $LOOP -j DROP
+/sbin/iptables -A INPUT -i eth0 -s $LOOP -j DROP
+/sbin/iptables -A FORWARD -i eth0 -s $LOOP -j DROP
+/sbin/iptables -A INPUT -i eth0 -d $LOOP -j DROP
+/sbin/iptables -A FORWARD -i eth0 -d $LOOP -j DROP
 
 # Anything coming from the Internet should have a real Internet address
-iptables -A FORWARD -i eth0 -s 192.168.0.0/16 -j DROP
-iptables -A FORWARD -i eth0 -s 172.16.0.0/12 -j DROP
-iptables -A FORWARD -i eth0 -s 10.0.0.0/8 -j DROP
-iptables -A INPUT -i eth0 -s 192.168.0.0/16 -j DROP
-iptables -A INPUT -i eth0 -s 172.16.0.0/12 -j DROP
-iptables -A INPUT -i eth0 -s 10.0.0.0/8 -j DROP
+/sbin/iptables -A FORWARD -i eth0 -s 192.168.0.0/16 -j DROP
+/sbin/iptables -A FORWARD -i eth0 -s 172.16.0.0/12 -j DROP
+/sbin/iptables -A FORWARD -i eth0 -s 10.0.0.0/8 -j DROP
+/sbin/iptables -A INPUT -i eth0 -s 192.168.0.0/16 -j DROP
+/sbin/iptables -A INPUT -i eth0 -s 172.16.0.0/12 -j DROP
+/sbin/iptables -A INPUT -i eth0 -s 10.0.0.0/8 -j DROP
 
 # Block outgoing NetBios 
-iptables -A FORWARD -p tcp --sport 137:139 -o eth0 -j DROP
-iptables -A FORWARD -p udp --sport 137:139 -o eth0 -j DROP
-iptables -A OUTPUT -p tcp --sport 137:139 -o eth0 -j DROP
-iptables -A OUTPUT -p udp --sport 137:139 -o eth0 -j DROP
+/sbin/iptables -A FORWARD -p tcp --sport 137:139 -o eth0 -j DROP
+/sbin/iptables -A FORWARD -p udp --sport 137:139 -o eth0 -j DROP
+/sbin/iptables -A OUTPUT -p tcp --sport 137:139 -o eth0 -j DROP
+/sbin/iptables -A OUTPUT -p udp --sport 137:139 -o eth0 -j DROP
 
 # Allow local loopback
-iptables -A INPUT -s $LOOP -j ACCEPT
-iptables -A INPUT -d $LOOP -j ACCEPT
+/sbin/iptables -A INPUT -s $LOOP -j ACCEPT
+/sbin/iptables -A INPUT -d $LOOP -j ACCEPT
 
 # Allow incoming pings (can be disabled)
-iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
+/sbin/iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
 
 # Allow services such as www and ssh (can be disabled)
-iptables -A INPUT -p tcp --dport ssh -j ACCEPT
+/sbin/iptables -A INPUT -p tcp --dport ssh -j ACCEPT
 
 # Allow OpenVPN 
-iptables -A INPUT -p $PROTOCOL --dport $PORT -j ACCEPT
+/sbin/iptables -A INPUT -p $PROTOCOL --dport $PORT -j ACCEPT
 
-iptables -A INPUT -i tun+ -j ACCEPT
-iptables -A FORWARD -i tun+ -j ACCEPT
-iptables -A INPUT -i tap+ -j ACCEPT
-iptables -A FORWARD -i tap+ -j ACCEPT
+/sbin/iptables -A INPUT -i tun+ -j ACCEPT
+/sbin/iptables -A FORWARD -i tun+ -j ACCEPT
+/sbin/iptables -A INPUT -i tap+ -j ACCEPT
+/sbin/iptables -A FORWARD -i tap+ -j ACCEPT
 
 # Keep state of connections from local machine and private subnets
-iptables -A OUTPUT -m state --state NEW -o eth0 -j ACCEPT
-iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
-iptables -A FORWARD -m state --state NEW -o eth0 -j ACCEPT
-iptables -A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT	
+/sbin/iptables -A OUTPUT -m state --state NEW -o eth0 -j ACCEPT
+/sbin/iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+/sbin/iptables -A FORWARD -m state --state NEW -o eth0 -j ACCEPT
+/sbin/iptables -A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT
 
 /sbin/ip route add 10.0.2.0/24 via 10.0.2.2 dev tun0
 /sbin/iptables -t nat -A POSTROUTING --src 10.0.2.0/24 -o eth0 -j SNAT --to-source $(ifconfig eth0| sed -n '2 {s/^.*inet addr:\([0-9.]*\) .*/\1/;p}')" >> /etc/openvpn/up.sh
