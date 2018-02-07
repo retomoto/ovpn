@@ -475,4 +475,5 @@ fi
 clear
 
 cat ~/$CLIENT.ovpn
+sleep 3
 reboot
