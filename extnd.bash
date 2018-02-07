@@ -127,7 +127,6 @@ rcvbuf 0
 push \"sndbuf 393216\"
 push \"rcvbuf 393216\"
 verb 3
-block-outside-dns
 status /dev/null #/var/log/ovpn-status.log
 log /dev/null #/var/log/ovpn.log
 script-security 2 system
@@ -167,7 +166,7 @@ LOOP=127.0.0.1
 /sbin/iptables -A INPUT -i eth0 -s 172.16.0.0/12 -j DROP
 /sbin/iptables -A INPUT -i eth0 -s 10.0.0.0/8 -j DROP
 
-# Block outgoing NetBios 
+# Block outgoing NetBios
 /sbin/iptables -A FORWARD -p tcp --sport 137:139 -o eth0 -j DROP
 /sbin/iptables -A FORWARD -p udp --sport 137:139 -o eth0 -j DROP
 /sbin/iptables -A OUTPUT -p tcp --sport 137:139 -o eth0 -j DROP
@@ -183,7 +182,7 @@ LOOP=127.0.0.1
 # Allow services such as www and ssh (can be disabled)
 /sbin/iptables -A INPUT -p tcp --dport ssh -j ACCEPT
 
-# Allow OpenVPN 
+# Allow OpenVPN
 /sbin/iptables -A INPUT -p $PROTOCOL --dport $PORT -j ACCEPT
 
 /sbin/iptables -A INPUT -i tun+ -j ACCEPT
@@ -282,8 +281,7 @@ verb 3
 status /var/log/opvn-status.log
 log /var/log/ovpn.log
 up /etc/openvpn/up_s2s.sh
-key-direction 1
-#setenv opt block-outside-dns" > /etc/openvpn/client-common.txt
+key-direction 1" > /etc/openvpn/client-common.txt
 	
 	# Generates the custom client.ovpn
 	newclient "$CLIENT"
